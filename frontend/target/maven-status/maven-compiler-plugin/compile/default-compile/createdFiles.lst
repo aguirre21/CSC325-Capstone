@@ -1,0 +1,7 @@
+com/travel/frontend/model/ExpenseItem.class
+com/travel/frontend/model/FlightInfo.class
+com/travel/frontend/TravelApp.class
+com/travel/frontend/model/HotelInfo.class
+com/travel/frontend/model/TripSession.class
+com/travel/frontend/util/ApiClient.class
+com/travel/frontend/controller/MainController.class

@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?import javafx.scene.layout.*?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.image.*?>
+<?import javafx.geometry.*?>
+<BorderPane xmlns:fx="http://javafx.com/fxml"
+            fx:controller="com.travel.frontend.controller.MainController"
+            styleClass="root-pane">
+
+    <left>
+        <VBox styleClass="sidebar" spacing="4">
+            <padding><Insets top="0" right="0" bottom="0" left="0"/></padding>
+
+            <VBox styleClass="sidebar-header" alignment="CENTER">
+                <padding><Insets top="28" right="16" bottom="24" left="16"/></padding>
+                <Label text="✈" styleClass="sidebar-logo"/>
+                <Label text="Travel Planner" styleClass="sidebar-title"/>
+            </VBox>
+
+            <Button fx:id="btnFlights" text="Flights" onAction="#showFlights"
+                    styleClass="nav-btn" maxWidth="Infinity"/>
+            <Button fx:id="btnHotel" text="Hotel" onAction="#showHotel"
+                    styleClass="nav-btn" maxWidth="Infinity"/>
+            <Button fx:id="btnBudget" text="Budget" onAction="#showBudget"
+                    styleClass="nav-btn" maxWidth="Infinity"/>
+            <Button fx:id="btnSummary" text="Summary" onAction="#showSummary"
+                    styleClass="nav-btn" maxWidth="Infinity"/>
+
+            <Region VBox.vgrow="ALWAYS"/>
+
+            <Label text="Capstone Project 2025" styleClass="sidebar-footer"/>
+            <padding><Insets bottom="16"/></padding>
+        </VBox>
+    </left>
+
+    <center>
+        <StackPane fx:id="contentArea" styleClass="content-area"/>
+    </center>
+</BorderPane>
