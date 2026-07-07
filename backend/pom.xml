@@ -32,14 +32,12 @@
             <artifactId>jackson-databind</artifactId>
         </dependency>
 
-        <!-- OkHttp HTTP client -->
         <dependency>
             <groupId>com.squareup.okhttp3</groupId>
             <artifactId>okhttp</artifactId>
             <version>4.12.0</version>
         </dependency>
 
-        <!-- iText 7 PDF generation (used starting Week 3) -->
         <dependency>
             <groupId>com.itextpdf</groupId>
             <artifactId>kernel</artifactId>

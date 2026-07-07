@@ -30,7 +30,6 @@
             <version>${javafx.version}</version>
         </dependency>
 
-        <!-- JSON parsing for API responses -->
         <dependency>
             <groupId>com.fasterxml.jackson.core</groupId>
             <artifactId>jackson-databind</artifactId>
