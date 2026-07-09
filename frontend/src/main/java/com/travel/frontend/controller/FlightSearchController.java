@@ -114,6 +114,116 @@ public class FlightSearchController {
         }).start();
     }
 
+
+    /**
+     * Gets user selection from list view of API response and replaces the selected airport in the origin text field.
+     */
+    @FXML
+    private void selectOrigin() {
+        int idx = originList.getSelectionModel().getSelectedIndex();
+        if (idx >= 0 && idx < originAirports.size()) {
+            selectedOrigin = originAirports.get(idx);
+            originQueryField.setText(originList.getSelectionModel().getSelectedItem());
+        }
+    }
+
+    /**
+     * Gets user selection from list view of API response and replaces the selected airport in the destination text field
+     */
+    @FXML
+    private void selectDest() {
+        int idx = destList.getSelectionModel().getSelectedIndex();
+        if (idx >= 0 && idx < destAirports.size()) {
+            selectedDest = destAirports.get(idx);
+            destQueryField.setText(destList.getSelectionModel().getSelectedItem());
+        }
+    }
+
+    /**
+     * Makes sure that user has selected origin and destination or else it prompts user. Once both fields are verified.
+     * Starts a background thread to query API and displays response in tabel.
+     */
+    @FXML
+    private void searchFlights() {
+        if (selectedOrigin == null || selectedDest == null) {
+            setStatus("Please select origin and destination airports.", true);
+            return;
+        }
+        if (flightDatePicker.getValue() == null) {
+            setStatus("Please select a flight date.", true);
+            return;
+        }
+
+        String originSkyId = selectedOrigin.path("skyId").asText();
+        String destSkyId = selectedDest.path("skyId").asText();
+        String originEntityId = selectedOrigin.path("entityId").asText();
+        String destEntityId = selectedDest.path("entityId").asText();
+        String date = flightDatePicker.getValue().toString();
+        int adults = TripSession.get().getTravelerCount();
+        String cabin = cabinClassCombo.getValue();
+
+        setStatus("Searching flights...", false);
+        flights.clear();
+
+        new Thread(() -> {
+            try {
+                String url = "/api/flights/search?originSkyId=" + originSkyId
+                        + "&destinationSkyId=" + destSkyId
+                        + "&originEntityId=" + originEntityId
+                        + "&destinationEntityId=" + destEntityId
+                        + "&date=" + date
+                        + "&adults=" + adults
+                        + "&cabinClass=" + cabin;
+
+                String json = ApiClient.getRaw(url);
+                JsonNode arr = ApiClient.getMapper().readTree(json);
+                List<FlightInfo> found = new ArrayList<>();
+                if (arr.isArray()) {
+                    for (JsonNode n : arr) {
+                        found.add(new FlightInfo(
+                                n.path("itineraryId").asText(),
+                                n.path("airline").asText(),
+                                n.path("flightNumber").asText(),
+                                n.path("originCode").asText(),
+                                n.path("destinationCode").asText(),
+                                n.path("originCity").asText(""),
+                                n.path("destinationCity").asText(""),
+                                n.path("departureTime").asText(),
+                                n.path("arrivalTime").asText(),
+                                n.path("durationMinutes").asInt(),
+                                n.path("stopCount").asInt(),
+                                n.path("priceRaw").asDouble(),
+                                n.path("priceFormatted").asText()
+                        ));
+                    }
+                }
+                Platform.runLater(() -> {
+                    flights.setAll(found);
+                    setStatus(found.size() + " flight(s) found.", false);
+                });
+            } catch (Exception e) {
+                Platform.runLater(() -> setStatus("Search failed: " + e.getMessage(), true));
+            }
+        }).start();
+    }
+
+    /**
+     * Get selected row from table. If no row is selected prompts user. Adds selected flight to TripSession
+     */
+    @FXML
+    private void selectFlight() {
+        FlightInfo f = resultsTable.getSelectionModel().getSelectedItem();
+        if (f == null) {
+            setStatus("Please select a flight from the table.", true);
+            return;
+        }
+        TripSession s = TripSession.get();
+        s.addFlight(f);
+
+        selectedFlightLabel.setText(s.getFlights().size() + " flight added to trip. See Budget tab.");
+        setStatus("Flight added to trip!", false);
+    }
+
     private void setStatus(String msg, boolean isError) {
         statusLabel.setText(msg);
         statusLabel.setStyle(isError ? "-fx-text-fill: #C62828;" : "-fx-text-fill: #2E7D32;");
