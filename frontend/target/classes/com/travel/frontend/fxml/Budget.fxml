@@ -1,0 +1,113 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?import javafx.scene.layout.*?>
+<?import javafx.scene.control.*?>
+<?import javafx.geometry.*?>
+<ScrollPane xmlns:fx="http://javafx.com/fxml"
+            fx:controller="com.travel.frontend.controller.BudgetController"
+            fitToWidth="true" styleClass="scroll-pane">
+
+    <VBox styleClass="page-container" spacing="20">
+        <padding><Insets top="32" right="40" bottom="32" left="40"/></padding>
+
+        <Label text="Budget Calculator" styleClass="page-title"/>
+        <Label text="Estimate your total trip cost per category." styleClass="page-subtitle"/>
+
+        <!-- Flights breakdown -->
+        <VBox styleClass="card" spacing="10">
+            <padding><Insets top="20" right="24" bottom="20" left="24"/></padding>
+            <Label text="Flights" styleClass="section-title"/>
+            <VBox fx:id="flightsBreakdown" spacing="6"/>
+            <Separator/>
+            <HBox alignment="CENTER_LEFT">
+                <Label text="Flight Subtotal" styleClass="field-label"/>
+                <Region HBox.hgrow="ALWAYS"/>
+                <Label fx:id="flightCostLabel" text="\$0.00" styleClass="cost-display"/>
+            </HBox>
+        </VBox>
+
+        <!-- Hotels breakdown -->
+        <VBox styleClass="card" spacing="10">
+            <padding><Insets top="20" right="24" bottom="20" left="24"/></padding>
+            <Label text="Hotels" styleClass="section-title"/>
+            <VBox fx:id="hotelsBreakdown" spacing="6"/>
+            <Separator/>
+            <HBox alignment="CENTER_LEFT">
+                <Label text="Hotel Subtotal" styleClass="field-label"/>
+                <Region HBox.hgrow="ALWAYS"/>
+                <Label fx:id="hotelCostLabel" text="\$0.00" styleClass="cost-display"/>
+            </HBox>
+        </VBox>
+
+        <!-- Fixed categories -->
+        <VBox styleClass="card" spacing="16">
+            <padding><Insets top="24" right="24" bottom="24" left="24"/></padding>
+            <Label text="Additional Expenses (USD)" styleClass="section-title"/>
+
+            <GridPane hgap="16" vgap="12">
+                <columnConstraints>
+                    <ColumnConstraints percentWidth="50"/>
+                    <ColumnConstraints percentWidth="50"/>
+                </columnConstraints>
+
+                <Label text="Food &amp; Dining" styleClass="field-label"
+                       GridPane.columnIndex="0" GridPane.rowIndex="0"/>
+                <TextField fx:id="foodField" promptText="0.00"
+                           GridPane.columnIndex="1" GridPane.rowIndex="0"/>
+
+                <Label text="Local Transportation" styleClass="field-label"
+                       GridPane.columnIndex="0" GridPane.rowIndex="1"/>
+                <TextField fx:id="transportField" promptText="0.00"
+                           GridPane.columnIndex="1" GridPane.rowIndex="1"/>
+
+                <Label text="Activities &amp; Tours" styleClass="field-label"
+                       GridPane.columnIndex="0" GridPane.rowIndex="2"/>
+                <TextField fx:id="activitiesField" promptText="0.00"
+                           GridPane.columnIndex="1" GridPane.rowIndex="2"/>
+            </GridPane>
+
+            <HBox alignment="CENTER_LEFT" spacing="16">
+                <Button text="Save Budget" onAction="#saveBudget" styleClass="btn-primary"/>
+                <Label fx:id="statusLabel" styleClass="status-label"/>
+            </HBox>
+        </VBox>
+
+        <!-- Flexible other expenses -->
+        <VBox styleClass="card" spacing="12">
+            <padding><Insets top="20" right="24" bottom="20" left="24"/></padding>
+            <Label text="Other Expenses" styleClass="section-title"/>
+            <Label text="Add any other expenses not covered above (insurance, visas, souvenirs, etc.)."
+                   styleClass="page-subtitle"/>
+
+            <HBox spacing="8" alignment="CENTER_LEFT">
+                <TextField fx:id="expenseDescField" promptText="Description" HBox.hgrow="ALWAYS"/>
+                <TextField fx:id="expenseAmountField" promptText="0.00" prefWidth="120"/>
+                <Button text="Add Expense" onAction="#addExpense" styleClass="btn-secondary"/>
+            </HBox>
+
+            <TableView fx:id="expensesTable" prefHeight="160">
+                <columns>
+                    <TableColumn fx:id="colExpenseDesc" text="Description" prefWidth="280"/>
+                    <TableColumn fx:id="colExpenseAmount" text="Amount" prefWidth="120"/>
+                    <TableColumn fx:id="colExpenseRemove" text="" prefWidth="90"/>
+                </columns>
+                <placeholder><Label text="No other expenses added yet."/></placeholder>
+            </TableView>
+
+            <HBox alignment="CENTER_LEFT">
+                <Label text="Other Subtotal" styleClass="field-label"/>
+                <Region HBox.hgrow="ALWAYS"/>
+                <Label fx:id="otherCostLabel" text="\$0.00" styleClass="cost-display"/>
+            </HBox>
+        </VBox>
+
+        <!-- Totals -->
+        <VBox styleClass="card-accent" spacing="12">
+            <padding><Insets top="20" right="24" bottom="20" left="24"/></padding>
+            <Label text="Cost Summary" styleClass="section-title-light"/>
+            <VBox spacing="4">
+                <Label text="ESTIMATED TOTAL" styleClass="cost-key"/>
+                <Label fx:id="totalLabel" text="\$0.00" styleClass="total-hero"/>
+            </VBox>
+        </VBox>
+    </VBox>
+</ScrollPane>
