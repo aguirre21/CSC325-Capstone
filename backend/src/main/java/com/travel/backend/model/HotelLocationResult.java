@@ -5,8 +5,7 @@ public class HotelLocationResult {
     private String name;
     private String subtitle;
 
-    public HotelLocationResult() {
-    }
+    public HotelLocationResult() {}
 
     public HotelLocationResult(int geoId, String name, String subtitle) {
         this.geoId = geoId;
@@ -14,27 +13,12 @@ public class HotelLocationResult {
         this.subtitle = subtitle;
     }
 
-    public int getGeoId() {
-        return geoId;
-    }
+    public int getGeoId() { return geoId; }
+    public void setGeoId(int geoId) { this.geoId = geoId; }
 
-    public void setGeoId(int geoId) {
-        this.geoId = geoId;
-    }
+    public String getName() { return name; }
+    public void setName(String name) { this.name = name; }
 
-    public String getName() {
-        return name;
-    }
-
-    public void setName(String name) {
-        this.name = name;
-    }
-
-    public String getSubtitle() {
-        return subtitle;
-    }
-
-    public void setSubtitle(String subtitle) {
-        this.subtitle = subtitle;
-    }
+    public String getSubtitle() { return subtitle; }
+    public void setSubtitle(String subtitle) { this.subtitle = subtitle; }
 }

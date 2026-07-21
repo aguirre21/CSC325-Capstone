@@ -9,62 +9,26 @@ public class HotelResult {
     private double pricePerNight;
     private String priceFormatted;
 
-    public HotelResult() {
-    }
+    public HotelResult() {}
 
-    public String getId() {
-        return id;
-    }
+    public String getId() { return id; }
+    public void setId(String id) { this.id = id; }
 
-    public void setId(String id) {
-        this.id = id;
-    }
+    public String getName() { return name; }
+    public void setName(String name) { this.name = name; }
 
-    public String getName() {
-        return name;
-    }
+    public String getLocation() { return location; }
+    public void setLocation(String location) { this.location = location; }
 
-    public void setName(String name) {
-        this.name = name;
-    }
+    public double getRating() { return rating; }
+    public void setRating(double rating) { this.rating = rating; }
 
-    public String getLocation() {
-        return location;
-    }
+    public String getReviewCount() { return reviewCount; }
+    public void setReviewCount(String reviewCount) { this.reviewCount = reviewCount; }
 
-    public void setLocation(String location) {
-        this.location = location;
-    }
+    public double getPricePerNight() { return pricePerNight; }
+    public void setPricePerNight(double pricePerNight) { this.pricePerNight = pricePerNight; }
 
-    public double getRating() {
-        return rating;
-    }
-
-    public void setRating(double rating) {
-        this.rating = rating;
-    }
-
-    public String getReviewCount() {
-        return reviewCount;
-    }
-
-    public void setReviewCount(String reviewCount) {
-        this.reviewCount = reviewCount;
-    }
-
-    public double getPricePerNight() {
-        return pricePerNight;
-    }
-
-    public void setPricePerNight(double pricePerNight) {
-        this.pricePerNight = pricePerNight;
-    }
-
-    public String getPriceFormatted() {
-        return priceFormatted;
-    }
-
-    public void setPriceFormatted(String priceFormatted) {
-        this.priceFormatted = priceFormatted;
-    }
+    public String getPriceFormatted() { return priceFormatted; }
+    public void setPriceFormatted(String priceFormatted) { this.priceFormatted = priceFormatted; }
 }

@@ -2,7 +2,6 @@
 <?import javafx.scene.layout.*?>
 <?import javafx.scene.control.*?>
 <?import javafx.geometry.*?>
-
 <ScrollPane xmlns:fx="http://javafx.com/fxml"
             fx:controller="com.travel.frontend.controller.FlightSearchController"
             fitToWidth="true" styleClass="scroll-pane">

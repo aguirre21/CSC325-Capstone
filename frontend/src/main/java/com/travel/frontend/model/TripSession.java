@@ -83,6 +83,8 @@ public class TripSession {
         return travelerCount > 0 ? getTotalCost() / travelerCount : getTotalCost();
     }
 
+    // --- Getters and setters ---
+
     public String getOrigin() { return origin; }
     public void setOrigin(String origin) { this.origin = origin; }
 
