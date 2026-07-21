@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?import javafx.scene.layout.*?>
+<?import javafx.scene.control.*?>
+<?import javafx.geometry.*?>
+<ScrollPane xmlns:fx="http://javafx.com/fxml"
+            fx:controller="com.travel.frontend.controller.SummaryController"
+            fitToWidth="true" styleClass="scroll-pane">
+
+    <VBox styleClass="page-container" spacing="20">
+        <padding><Insets top="32" right="40" bottom="32" left="40"/></padding>
+
+        <Label text="Trip Summary" styleClass="page-title"/>
+        <Label text="Final review of your itinerary and costs — export as PDF when ready." styleClass="page-subtitle"/>
+
+        <!-- Flights -->
+        <VBox styleClass="card" spacing="12">
+            <padding><Insets top="20" right="24" bottom="20" left="24"/></padding>
+            <Label text="Flights" styleClass="section-title"/>
+            <VBox fx:id="flightsContainer" spacing="10"/>
+        </VBox>
+
+        <!-- Hotels -->
+        <VBox styleClass="card" spacing="12">
+            <padding><Insets top="20" right="24" bottom="20" left="24"/></padding>
+            <Label text="Hotels" styleClass="section-title"/>
+            <VBox fx:id="hotelsContainer" spacing="10"/>
+        </VBox>
+
+        <!-- Other Expenses recap -->
+        <VBox styleClass="card" spacing="12">
+            <padding><Insets top="20" right="24" bottom="20" left="24"/></padding>
+            <Label text="Other Expenses" styleClass="section-title"/>
+            <VBox fx:id="expensesContainer" spacing="6"/>
+        </VBox>
+
+        <!-- Cost Summary -->
+        <VBox styleClass="card-accent" spacing="12">
+            <padding><Insets top="20" right="24" bottom="20" left="24"/></padding>
+            <Label text="Cost Summary" styleClass="section-title-light"/>
+            <VBox spacing="4">
+                <Label text="ESTIMATED TOTAL" styleClass="cost-key"/>
+                <Label fx:id="totalCostLabel" text="\$0.00" styleClass="total-hero"/>
+            </VBox>
+        </VBox>
+
+        <HBox spacing="16" alignment="CENTER_LEFT">
+            <Button text="Generate PDF Summary" onAction="#generatePdf" styleClass="btn-accent"/>
+            <Label fx:id="statusLabel" styleClass="status-label"/>
+        </HBox>
+    </VBox>
+</ScrollPane>
