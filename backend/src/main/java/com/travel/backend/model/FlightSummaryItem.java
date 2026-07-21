@@ -3,77 +3,40 @@ package com.travel.backend.model;
 public class FlightSummaryItem {
     private String airline;
     private String flightNumber;
-    private String departureAirport;
-    private String arrivalAirport;
-    private String departureTime;
-    private String arrivalTime;
-    private double price;
-    private String priceFormatted;
+    private String origin;
+    private String destination;
+    private String departure;
+    private String arrival;
+    private int durationMinutes;
+    private int stops;
+    private double cost;
 
-    public FlightSummaryItem() {
-    }
+    public FlightSummaryItem() {}
 
-    public String getAirline() {
-        return airline;
-    }
+    public String getAirline() { return airline; }
+    public void setAirline(String airline) { this.airline = airline; }
 
-    public void setAirline(String airline) {
-        this.airline = airline;
-    }
+    public String getFlightNumber() { return flightNumber; }
+    public void setFlightNumber(String flightNumber) { this.flightNumber = flightNumber; }
 
-    public String getFlightNumber() {
-        return flightNumber;
-    }
+    public String getOrigin() { return origin; }
+    public void setOrigin(String origin) { this.origin = origin; }
 
-    public void setFlightNumber(String flightNumber) {
-        this.flightNumber = flightNumber;
-    }
+    public String getDestination() { return destination; }
+    public void setDestination(String destination) { this.destination = destination; }
 
-    public String getDepartureAirport() {
-        return departureAirport;
-    }
+    public String getDeparture() { return departure; }
+    public void setDeparture(String departure) { this.departure = departure; }
 
-    public void setDepartureAirport(String departureAirport) {
-        this.departureAirport = departureAirport;
-    }
+    public String getArrival() { return arrival; }
+    public void setArrival(String arrival) { this.arrival = arrival; }
 
-    public String getArrivalAirport() {
-        return arrivalAirport;
-    }
+    public int getDurationMinutes() { return durationMinutes; }
+    public void setDurationMinutes(int durationMinutes) { this.durationMinutes = durationMinutes; }
 
-    public void setArrivalAirport(String arrivalAirport) {
-        this.arrivalAirport = arrivalAirport;
-    }
+    public int getStops() { return stops; }
+    public void setStops(int stops) { this.stops = stops; }
 
-    public String getDepartureTime() {
-        return departureTime;
-    }
-
-    public void setDepartureTime(String departureTime) {
-        this.departureTime = departureTime;
-    }
-
-    public String getArrivalTime() {
-        return arrivalTime;
-    }
-
-    public void setArrivalTime(String arrivalTime) {
-        this.arrivalTime = arrivalTime;
-    }
-
-    public double getPrice() {
-        return price;
-    }
-
-    public void setPrice(double price) {
-        this.price = price;
-    }
-
-    public String getPriceFormatted() {
-        return priceFormatted;
-    }
-
-    public void setPriceFormatted(String priceFormatted) {
-        this.priceFormatted = priceFormatted;
-    }
+    public double getCost() { return cost; }
+    public void setCost(double cost) { this.cost = cost; }
 }

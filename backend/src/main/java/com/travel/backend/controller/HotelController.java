@@ -4,16 +4,14 @@ import com.travel.backend.model.HotelLocationResult;
 import com.travel.backend.model.HotelResult;
 import com.travel.backend.service.HotelService;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
 @RestController
 @RequestMapping("/api/hotels")
 public class HotelController {
+
     private final HotelService hotelService;
 
     public HotelController(HotelService hotelService) {
@@ -30,8 +28,6 @@ public class HotelController {
             @RequestParam int geoId,
             @RequestParam String checkIn,
             @RequestParam String checkOut) {
-        return ResponseEntity.ok(
-                hotelService.searchHotels(geoId, checkIn, checkOut)
-        );
+        return ResponseEntity.ok(hotelService.searchHotels(geoId, checkIn, checkOut));
     }
 }

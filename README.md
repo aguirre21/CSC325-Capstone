@@ -23,43 +23,57 @@ A full-stack desktop application for planning travel itineraries with real fligh
 ## Project Structure
 
 ```
-travel-itinerary/
+CSC325-Capstone/
 ├── pom.xml                  # Parent POM
+├── docs/                    # API and screen documentation
+│   ├── api-flights.md
+│   ├── api-hotels-and-pdf.md
+│   └── screen-budget-summary.md
 ├── backend/                 # Spring Boot REST API
-│   └── src/main/java/com/travel/backend/
-│       ├── controller/
-│       │   ├── FlightController.java   # /api/flights/airports, /api/flights/search
-│       │   ├── HotelController.java    # /api/hotels/locations, /api/hotels/search
-│       │   └── PdfController.java      # /api/pdf/generate
-│       ├── service/
-│       │   ├── FlightService.java      # OkHttp calls to Skyscanner RapidAPI
-│       │   ├── HotelService.java       # OkHttp calls to TripAdvisor16 RapidAPI
-│       │   └── PdfService.java         # iText PDF generation
-│       └── model/
-│           ├── AirportResult.java
-│           ├── FlightResult.java
-│           ├── FlightSummaryItem.java
-│           ├── HotelLocationResult.java
-│           ├── HotelResult.java
-│           ├── HotelSummaryItem.java
-│           ├── ExpenseSummaryItem.java
-│           └── TripSummaryRequest.java
+│   └── src/main/
+│       ├── java/com/travel/backend/
+│       │   ├── TravelBackendApplication.java   # Spring Boot entry point
+│       │   ├── config/
+│       │   │   └── AppConfig.java      # CORS configuration
+│       │   ├── controller/
+│       │   │   ├── FlightController.java   # /api/flights/airports, /api/flights/search
+│       │   │   ├── HotelController.java    # /api/hotels/locations, /api/hotels/search
+│       │   │   └── PdfController.java      # /api/pdf/generate
+│       │   ├── service/
+│       │   │   ├── FlightService.java      # OkHttp calls to Skyscanner RapidAPI
+│       │   │   ├── HotelService.java       # OkHttp calls to TripAdvisor16 RapidAPI
+│       │   │   └── PdfService.java         # iText PDF generation
+│       │   └── model/
+│       │       ├── AirportResult.java
+│       │       ├── FlightResult.java
+│       │       ├── FlightSummaryItem.java
+│       │       ├── HotelLocationResult.java
+│       │       ├── HotelResult.java
+│       │       ├── HotelSummaryItem.java
+│       │       ├── ExpenseSummaryItem.java
+│       │       └── TripSummaryRequest.java
+│       └── resources/
+│           └── application.properties  # Server port, RapidAPI keys/hosts
 └── frontend/                # JavaFX desktop app
-    └── src/main/java/com/travel/frontend/
-        ├── TravelApp.java              # JavaFX entry point
-        ├── controller/
-        │   ├── MainController.java     # Sidebar nav, loads screens into StackPane
-        │   ├── FlightSearchController.java # Screen 1 — airport + flight search
-        │   ├── HotelController.java    # Screen 2 — location + hotel search
-        │   ├── BudgetController.java   # Screen 3 — manage flights/hotels/expenses, budget breakdown
-        │   └── SummaryController.java  # Screen 4 — read-only recap + PDF export
-        ├── model/
-        │   ├── TripSession.java        # Singleton — shared state across all screens
-        │   ├── FlightInfo.java         # JavaFX property model for flight TableViews
-        │   ├── HotelInfo.java          # JavaFX property model for hotel TableViews
-        │   └── ExpenseItem.java        # JavaFX property model for custom budget expenses
-        └── util/
-            └── ApiClient.java          # HTTP client wrapper (java.net.http), base: localhost:8080
+    └── src/main/
+        ├── java/com/travel/frontend/
+        │   ├── TravelApp.java              # JavaFX entry point
+        │   ├── controller/
+        │   │   ├── MainController.java     # Sidebar nav, loads screens into StackPane
+        │   │   ├── FlightSearchController.java # Screen 1 — airport + flight search
+        │   │   ├── HotelController.java    # Screen 2 — location + hotel search
+        │   │   ├── BudgetController.java   # Screen 3 — manage flights/hotels/expenses, budget breakdown
+        │   │   └── SummaryController.java  # Screen 4 — read-only recap + PDF export
+        │   ├── model/
+        │   │   ├── TripSession.java        # Singleton — shared state across all screens
+        │   │   ├── FlightInfo.java         # JavaFX property model for flight TableViews
+        │   │   ├── HotelInfo.java          # JavaFX property model for hotel TableViews
+        │   │   └── ExpenseItem.java        # JavaFX property model for custom budget expenses
+        │   └── util/
+        │       └── ApiClient.java          # HTTP client wrapper (java.net.http), base: localhost:8080
+        └── resources/com/travel/frontend/
+            ├── css/styles.css               # App-wide styling
+            └── fxml/                        # Budget.fxml, FlightSearch.fxml, Hotel.fxml, Main.fxml, Summary.fxml
 ```
 
 ---
@@ -126,7 +140,7 @@ There is no separate "Trip Info" screen — it was removed once its only remaini
 - **No Lombok** — removed due to incompatibility with Java 24; all models use plain getters/setters.
 - **No RestTemplate** — replaced with OkHttp in the backend per project requirements.
 - **Allowed HTTP clients**: AsyncHttpClient, java.net.http, OkHttp, Unirest. OkHttp used in backend, java.net.http in frontend.
-- **URL encoding** — airport/location queries are `URLEncoder.encode()`'d before building the request URL to handle spaces and special characters.
+- **URL encoding** — query parameters are added via OkHttp's `HttpUrl.Builder.addQueryParameter()`, which encodes spaces and special characters automatically; no manual `URLEncoder` calls needed.
 - **TripSession** — singleton, no database. All trip data (flights, hotels, budget) lives here for the session lifetime.
 - **Flight number not shown** — the Skyscanner API response does not include individual flight numbers in the itinerary structure; the column was removed from the UI.
 - **AirportResult.subtitle** — stores `countryName` from the API response, displayed in the airport list as `"Name — Country"`.

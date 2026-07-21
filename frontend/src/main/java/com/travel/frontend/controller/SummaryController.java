@@ -7,10 +7,7 @@ import com.travel.frontend.model.TripSession;
 import com.travel.frontend.util.ApiClient;
 import javafx.application.Platform;
 import javafx.fxml.FXML;
-import javafx.scene.control.Label;
-import javafx.scene.layout.HBox;
-import javafx.scene.layout.Priority;
-import javafx.scene.layout.Region;
+import javafx.scene.control.*;
 import javafx.scene.layout.VBox;
 import javafx.stage.FileChooser;
 
@@ -73,62 +70,67 @@ public class SummaryController {
         totalCostLabel.setText(String.format("$%.2f", s.getTotalCost()));
     }
 
-    private HBox breakdownRow(String label, String value) {
+    private javafx.scene.layout.HBox breakdownRow(String label, String value) {
         Label left = labeled(label, "summary-key");
         Label right = labeled(value, "summary-value");
-        Region spacer = new Region();
-        HBox.setHgrow(spacer, Priority.ALWAYS);
-        return new HBox(8, left, spacer, right);
+        javafx.scene.layout.Region spacer = new javafx.scene.layout.Region();
+        javafx.scene.layout.HBox.setHgrow(spacer, javafx.scene.layout.Priority.ALWAYS);
+        return new javafx.scene.layout.HBox(8, left, spacer, right);
     }
 
     @FXML
     private void generatePdf() {
         TripSession s = TripSession.get();
 
-        // Field names must match backend's TripSummaryRequest (see docs/api-hotels-and-pdf.md),
-        // not TripSession's own field names — the two models diverge.
         Map<String, Object> body = new HashMap<>();
-        body.put("tripName", tripName(s));
+        body.put("origin", s.getOrigin());
         body.put("destination", s.getDestination());
-        body.put("startDate", s.getDepartureDate());
-        body.put("endDate", s.getReturnDate());
+        body.put("departureDate", s.getDepartureDate());
+        body.put("returnDate", s.getReturnDate());
+        body.put("travelerCount", s.getTravelerCount());
+        body.put("notes", s.getNotes());
 
         List<Map<String, Object>> flights = new ArrayList<>();
         for (FlightInfo f : s.getFlights()) {
             Map<String, Object> flightMap = new HashMap<>();
             flightMap.put("airline", f.getAirline());
             flightMap.put("flightNumber", f.getFlightNumber());
-            flightMap.put("departureAirport", f.getOriginCode());
-            flightMap.put("arrivalAirport", f.getDestinationCode());
-            flightMap.put("departureTime", f.getDepartureRaw());
-            flightMap.put("arrivalTime", f.getArrivalRaw());
-            flightMap.put("price", f.getPriceRaw());
-            flightMap.put("priceFormatted", String.format("$%.2f", f.getPriceRaw()));
+            flightMap.put("origin", f.getOriginCode());
+            flightMap.put("destination", f.getDestinationCode());
+            flightMap.put("departure", f.getDepartureRaw());
+            flightMap.put("arrival", f.getArrivalRaw());
+            flightMap.put("durationMinutes", f.getDurationMinutes());
+            flightMap.put("stops", f.getStopCount());
+            flightMap.put("cost", f.getPriceRaw());
             flights.add(flightMap);
         }
         body.put("flights", flights);
 
-        List<Map<String, Object>> hotels = new ArrayList<>();
+        List<Map<String, Object>> hotelsList = new ArrayList<>();
         for (HotelInfo h : s.getHotels()) {
             Map<String, Object> hotelMap = new HashMap<>();
             hotelMap.put("name", h.getName());
             hotelMap.put("location", h.getLocation());
             hotelMap.put("checkIn", h.getCheckIn());
             hotelMap.put("checkOut", h.getCheckOut());
+            hotelMap.put("nights", h.getNights());
             hotelMap.put("pricePerNight", h.getPricePerNightRaw());
-            hotelMap.put("priceFormatted", String.format("$%.2f", h.getPricePerNightRaw()));
-            hotels.add(hotelMap);
+            hotelsList.add(hotelMap);
         }
-        body.put("hotels", hotels);
+        body.put("hotels", hotelsList);
 
-        List<Map<String, Object>> expenses = new ArrayList<>();
-        addExpenseIfPositive(expenses, "Food & Dining", "Food & Dining", s.getFoodBudget());
-        addExpenseIfPositive(expenses, "Local Transportation", "Local Transportation", s.getTransportBudget());
-        addExpenseIfPositive(expenses, "Activities & Tours", "Activities & Tours", s.getActivitiesBudget());
+        body.put("foodBudget", s.getFoodBudget());
+        body.put("transportBudget", s.getTransportBudget());
+        body.put("activitiesBudget", s.getActivitiesBudget());
+
+        List<Map<String, Object>> otherExpenses = new ArrayList<>();
         for (ExpenseItem e : s.getOtherExpenses()) {
-            addExpenseIfPositive(expenses, "Other", e.getDescription(), e.getAmount());
+            Map<String, Object> expenseMap = new HashMap<>();
+            expenseMap.put("description", e.getDescription());
+            expenseMap.put("amount", e.getAmount());
+            otherExpenses.add(expenseMap);
         }
-        body.put("expenses", expenses);
+        body.put("otherExpenses", otherExpenses);
 
         FileChooser chooser = new FileChooser();
         chooser.setTitle("Save Trip Summary PDF");
@@ -156,27 +158,6 @@ public class SummaryController {
                 });
             }
         }).start();
-    }
-
-    private void addExpenseIfPositive(List<Map<String, Object>> expenses, String category, String description, double amount) {
-        if (amount <= 0) return;
-        Map<String, Object> expenseMap = new HashMap<>();
-        expenseMap.put("category", category);
-        expenseMap.put("description", description);
-        expenseMap.put("amount", amount);
-        expenses.add(expenseMap);
-    }
-
-    private String tripName(TripSession s) {
-        String origin = s.getOrigin();
-        String destination = s.getDestination();
-        if (origin != null && !origin.isBlank() && destination != null && !destination.isBlank()) {
-            return origin + " → " + destination;
-        }
-        if (destination != null && !destination.isBlank()) {
-            return destination + " Trip";
-        }
-        return "Trip Summary";
     }
 
     private Label labeled(String text, String styleClass) {

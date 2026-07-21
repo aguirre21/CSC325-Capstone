@@ -18,6 +18,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class FlightSearchController {
+
     @FXML private TextField originQueryField;
     @FXML private ListView<String> originList;
     @FXML private TextField destQueryField;
@@ -35,21 +36,13 @@ public class FlightSearchController {
     @FXML private Label statusLabel;
     @FXML private Label selectedFlightLabel;
 
-    //List used to store flight results and display results on table
     private final ObservableList<FlightInfo> flights = FXCollections.observableArrayList();
-    //Holds results from API
     private final List<JsonNode> originAirports = new ArrayList<>();
     private final List<JsonNode> destAirports = new ArrayList<>();
 
-    //Store user search query
     private JsonNode selectedOrigin;
     private JsonNode selectedDest;
 
-
-    /**
-     * Sets default values of FXML elements when FXML is loaded. Elements include drop down cabin class menu, Table
-     * column heading.
-     */
     @FXML
     public void initialize() {
         cabinClassCombo.setItems(FXCollections.observableArrayList("economy", "premium_economy", "business", "first"));
@@ -64,11 +57,9 @@ public class FlightSearchController {
         colPrice.setCellValueFactory(new PropertyValueFactory<>("price"));
 
         resultsTable.setItems(flights);
+
     }
 
-    /**
-     * Following methods gets user input for Origin/ destination Airport and uses SearchAirport method to Query API
-     */
     @FXML
     private void searchOriginAirports() {
         searchAirports(originQueryField.getText(), originList, originAirports, true);
@@ -79,15 +70,6 @@ public class FlightSearchController {
         searchAirports(destQueryField.getText(), destList, destAirports, false);
     }
 
-    /**
-     * Checks to see if input is blank prior to starting query to API using that input. Takes that response
-     * and stores it. Displays the stored responses in table.
-     *
-     * @param query user input
-     * @param list saved response from API to be displayed
-     * @param store holds response from API
-     * @param isOrigin
-     */
     private void searchAirports(String query, ListView<String> list, List<JsonNode> store, boolean isOrigin) {
         if (query.isBlank()) return;
         setStatus("Searching airports...", false);
@@ -114,10 +96,6 @@ public class FlightSearchController {
         }).start();
     }
 
-
-    /**
-     * Gets user selection from list view of API response and replaces the selected airport in the origin text field.
-     */
     @FXML
     private void selectOrigin() {
         int idx = originList.getSelectionModel().getSelectedIndex();
@@ -127,9 +105,6 @@ public class FlightSearchController {
         }
     }
 
-    /**
-     * Gets user selection from list view of API response and replaces the selected airport in the destination text field
-     */
     @FXML
     private void selectDest() {
         int idx = destList.getSelectionModel().getSelectedIndex();
@@ -139,10 +114,6 @@ public class FlightSearchController {
         }
     }
 
-    /**
-     * Makes sure that user has selected origin and destination or else it prompts user. Once both fields are verified.
-     * Starts a background thread to query API and displays response in tabel.
-     */
     @FXML
     private void searchFlights() {
         if (selectedOrigin == null || selectedDest == null) {
@@ -207,9 +178,6 @@ public class FlightSearchController {
         }).start();
     }
 
-    /**
-     * Get selected row from table. If no row is selected prompts user. Adds selected flight to TripSession
-     */
     @FXML
     private void selectFlight() {
         FlightInfo f = resultsTable.getSelectionModel().getSelectedItem();
@@ -220,7 +188,7 @@ public class FlightSearchController {
         TripSession s = TripSession.get();
         s.addFlight(f);
 
-        selectedFlightLabel.setText(s.getFlights().size() + " flight added to trip. See Budget tab.");
+        selectedFlightLabel.setText(s.getFlights().size() + " flight(s) added to trip — see Budget tab.");
         setStatus("Flight added to trip!", false);
     }
 

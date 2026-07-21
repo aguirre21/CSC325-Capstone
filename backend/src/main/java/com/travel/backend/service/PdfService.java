@@ -1,11 +1,11 @@
 package com.travel.backend.service;
 
+import com.itextpdf.kernel.colors.ColorConstants;
+import com.itextpdf.kernel.colors.DeviceRgb;
 import com.itextpdf.kernel.pdf.PdfDocument;
 import com.itextpdf.kernel.pdf.PdfWriter;
 import com.itextpdf.layout.Document;
-import com.itextpdf.layout.element.Cell;
-import com.itextpdf.layout.element.Paragraph;
-import com.itextpdf.layout.element.Table;
+import com.itextpdf.layout.element.*;
 import com.itextpdf.layout.properties.TextAlignment;
 import com.itextpdf.layout.properties.UnitValue;
 import com.travel.backend.model.ExpenseSummaryItem;
@@ -15,198 +15,178 @@ import com.travel.backend.model.TripSummaryRequest;
 import org.springframework.stereotype.Service;
 
 import java.io.ByteArrayOutputStream;
-import java.text.NumberFormat;
-import java.util.Collections;
 import java.util.List;
-import java.util.Locale;
 
 @Service
 public class PdfService {
 
-    public byte[] generateTripSummary(TripSummaryRequest request) {
+    private static final DeviceRgb PRIMARY = new DeviceRgb(13, 71, 161);
+    private static final DeviceRgb LIGHT_BG = new DeviceRgb(238, 242, 247);
+    private static final DeviceRgb TEXT_SECONDARY = new DeviceRgb(84, 110, 122);
+
+    public byte[] generateTripSummary(TripSummaryRequest req) {
+        ByteArrayOutputStream out = new ByteArrayOutputStream();
         try {
-            TripSummaryRequest summaryRequest = request == null ? new TripSummaryRequest() : request;
-            ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
-            PdfWriter writer = new PdfWriter(outputStream);
-            PdfDocument pdfDocument = new PdfDocument(writer);
+            PdfWriter writer = new PdfWriter(out);
+            PdfDocument pdf = new PdfDocument(writer);
+            Document doc = new Document(pdf);
+            doc.setMargins(40, 50, 40, 50);
 
-            try (Document document = new Document(pdfDocument)) {
-                addTitle(document, "Trip Summary");
-                addTripDetails(document, summaryRequest);
-                addFlightsSection(document, listOrEmpty(summaryRequest.getFlights()));
-                addHotelsSection(document, listOrEmpty(summaryRequest.getHotels()));
-                addExpensesSection(document, listOrEmpty(summaryRequest.getExpenses()));
-                addTotalSection(document, summaryRequest);
-            }
+            addHeader(doc, req);
+            addSectionSpacer(doc);
+            addFlightDetails(doc, req);
+            addSectionSpacer(doc);
+            addHotelDetails(doc, req);
+            addSectionSpacer(doc);
+            addBudgetBreakdown(doc, req);
+            addFooter(doc);
 
-            return outputStream.toByteArray();
+            doc.close();
         } catch (Exception e) {
-            throw new RuntimeException("Failed to generate trip summary PDF: " + e.getMessage(), e);
+            throw new RuntimeException("PDF generation failed: " + e.getMessage(), e);
+        }
+        return out.toByteArray();
+    }
+
+    private void addHeader(Document doc, TripSummaryRequest req) {
+        Paragraph title = new Paragraph("Travel Itinerary")
+                .setFontSize(28)
+                .setBold()
+                .setFontColor(PRIMARY)
+                .setTextAlignment(TextAlignment.CENTER);
+        doc.add(title);
+
+        doc.add(new LineSeparator(new com.itextpdf.kernel.pdf.canvas.draw.SolidLine(1.5f))
+                .setMarginTop(10).setMarginBottom(10));
+    }
+
+    private void addFlightDetails(Document doc, TripSummaryRequest req) {
+        List<FlightSummaryItem> flights = req.getFlights();
+        if (flights == null || flights.isEmpty()) return;
+        addSectionTitle(doc, "Flight Information");
+        for (int i = 0; i < flights.size(); i++) {
+            FlightSummaryItem f = flights.get(i);
+            String label = flights.size() == 2 ? (i == 0 ? "Outbound Flight" : "Return Flight") : "Flight " + (i + 1);
+            Table table = twoColTable();
+            addRow(table, label, "");
+            addRow(table, "Airline", f.getAirline());
+            addRow(table, "Flight Number", f.getFlightNumber());
+            addRow(table, "Route", f.getOrigin() + " → " + f.getDestination());
+            addRow(table, "Departure", f.getDeparture());
+            addRow(table, "Arrival", f.getArrival());
+            addRow(table, "Duration", formatDuration(f.getDurationMinutes()));
+            addRow(table, "Stops", f.getStops() == 0 ? "Nonstop" : f.getStops() + " stop(s)");
+            addRow(table, "Flight Cost", String.format("$%.2f", f.getCost()));
+            doc.add(table);
+            if (i < flights.size() - 1) addSectionSpacer(doc);
         }
     }
 
-    private void addTitle(Document document, String title) {
-        document.add(new Paragraph(title)
-                .setBold()
-                .setFontSize(20)
-                .setTextAlignment(TextAlignment.CENTER));
+    private double totalFlightCost(TripSummaryRequest req) {
+        if (req.getFlights() == null) return 0.0;
+        return req.getFlights().stream().mapToDouble(FlightSummaryItem::getCost).sum();
     }
 
-    private void addSectionHeading(Document document, String heading) {
-        document.add(new Paragraph(heading)
-                .setBold()
+    private void addHotelDetails(Document doc, TripSummaryRequest req) {
+        List<HotelSummaryItem> hotels = req.getHotels();
+        if (hotels == null || hotels.isEmpty()) return;
+        addSectionTitle(doc, "Hotel Information");
+        for (int i = 0; i < hotels.size(); i++) {
+            HotelSummaryItem h = hotels.get(i);
+            Table table = twoColTable();
+            addRow(table, "Hotel", h.getName());
+            addRow(table, "Location", h.getLocation());
+            addRow(table, "Check-in", h.getCheckIn());
+            addRow(table, "Check-out", h.getCheckOut());
+            addRow(table, "Nights", String.valueOf(h.getNights()));
+            addRow(table, "Cost per Night", String.format("$%.2f", h.getPricePerNight()));
+            addRow(table, "Total Hotel Cost", String.format("$%.2f", h.getTotalCost()));
+            doc.add(table);
+            if (i < hotels.size() - 1) addSectionSpacer(doc);
+        }
+    }
+
+    private double totalHotelCost(TripSummaryRequest req) {
+        if (req.getHotels() == null) return 0.0;
+        return req.getHotels().stream().mapToDouble(HotelSummaryItem::getTotalCost).sum();
+    }
+
+    private double totalOtherExpenses(TripSummaryRequest req) {
+        if (req.getOtherExpenses() == null) return 0.0;
+        return req.getOtherExpenses().stream().mapToDouble(ExpenseSummaryItem::getAmount).sum();
+    }
+
+    private void addBudgetBreakdown(Document doc, TripSummaryRequest req) {
+        addSectionTitle(doc, "Budget Breakdown");
+
+        double flightTotal = totalFlightCost(req);
+        double hotelTotal = totalHotelCost(req);
+        double otherTotal = totalOtherExpenses(req);
+        double total = flightTotal + hotelTotal + req.getFoodBudget()
+                + req.getTransportBudget() + req.getActivitiesBudget() + otherTotal;
+
+        Table table = twoColTable();
+        addRow(table, "Flights", String.format("$%.2f", flightTotal));
+        addRow(table, "Hotel", String.format("$%.2f", hotelTotal));
+        addRow(table, "Food & Dining", String.format("$%.2f", req.getFoodBudget()));
+        addRow(table, "Transportation", String.format("$%.2f", req.getTransportBudget()));
+        addRow(table, "Activities", String.format("$%.2f", req.getActivitiesBudget()));
+        addRow(table, "Other", String.format("$%.2f", otherTotal));
+        doc.add(table);
+
+        if (req.getOtherExpenses() != null && !req.getOtherExpenses().isEmpty()) {
+            Table otherTable = twoColTable();
+            for (ExpenseSummaryItem e : req.getOtherExpenses()) {
+                addRow(otherTable, e.getDescription(), String.format("$%.2f", e.getAmount()));
+            }
+            doc.add(otherTable.setMarginTop(4));
+        }
+
+        Table totals = twoColTable();
+        Cell totalLabel = new Cell().add(new Paragraph("ESTIMATED TOTAL").setBold().setFontColor(PRIMARY));
+        Cell totalValue = new Cell().add(new Paragraph(String.format("$%.2f", total)).setBold().setFontColor(PRIMARY));
+        totals.addCell(totalLabel);
+        totals.addCell(totalValue);
+        doc.add(totals.setMarginTop(8));
+    }
+
+    private void addFooter(Document doc) {
+        doc.add(new LineSeparator(new com.itextpdf.kernel.pdf.canvas.draw.SolidLine(0.5f)).setMarginTop(20));
+        doc.add(new Paragraph("Generated by Travel Itinerary Planner")
+                .setFontSize(9)
+                .setFontColor(TEXT_SECONDARY)
+                .setTextAlignment(TextAlignment.CENTER)
+                .setMarginTop(6));
+    }
+
+    private void addSectionTitle(Document doc, String title) {
+        doc.add(new Paragraph(title)
                 .setFontSize(14)
-                .setMarginTop(16));
+                .setBold()
+                .setFontColor(PRIMARY)
+                .setMarginBottom(6));
     }
 
-    private void addTripDetails(Document document, TripSummaryRequest request) {
-        addSectionHeading(document, "Trip Details");
-
-        Table table = new Table(UnitValue.createPercentArray(new float[] {1, 2}))
-                .useAllAvailableWidth();
-        addRow(table, "Trip Name", safe(request.getTripName()));
-        addRow(table, "Destination", safe(request.getDestination()));
-        addRow(table, "Start Date", safe(request.getStartDate()));
-        addRow(table, "End Date", safe(request.getEndDate()));
-        document.add(table);
+    private void addSectionSpacer(Document doc) {
+        doc.add(new Paragraph(" ").setMarginBottom(4));
     }
 
-    private void addFlightsSection(Document document, List<FlightSummaryItem> flights) {
-        addSectionHeading(document, "Flights");
-
-        if (flights.isEmpty()) {
-            document.add(new Paragraph("No flights selected."));
-            return;
-        }
-
-        Table table = new Table(UnitValue.createPercentArray(new float[] {2, 1, 2, 2, 2, 2, 1}))
-                .useAllAvailableWidth();
-        addHeader(table, "Airline");
-        addHeader(table, "Flight");
-        addHeader(table, "From");
-        addHeader(table, "To");
-        addHeader(table, "Depart");
-        addHeader(table, "Arrive");
-        addHeader(table, "Price");
-
-        for (FlightSummaryItem flight : flights) {
-            table.addCell(safe(flight.getAirline()));
-            table.addCell(safe(flight.getFlightNumber()));
-            table.addCell(safe(flight.getDepartureAirport()));
-            table.addCell(safe(flight.getArrivalAirport()));
-            table.addCell(safe(flight.getDepartureTime()));
-            table.addCell(safe(flight.getArrivalTime()));
-            table.addCell(formatPrice(flight.getPriceFormatted(), flight.getPrice()));
-        }
-
-        document.add(table);
-    }
-
-    private void addHotelsSection(Document document, List<HotelSummaryItem> hotels) {
-        addSectionHeading(document, "Hotels");
-
-        if (hotels.isEmpty()) {
-            document.add(new Paragraph("No hotels selected."));
-            return;
-        }
-
-        Table table = new Table(UnitValue.createPercentArray(new float[] {2, 2, 1, 1, 1, 1}))
-                .useAllAvailableWidth();
-        addHeader(table, "Name");
-        addHeader(table, "Location");
-        addHeader(table, "Check In");
-        addHeader(table, "Check Out");
-        addHeader(table, "Rating");
-        addHeader(table, "Nightly Price");
-
-        for (HotelSummaryItem hotel : hotels) {
-            table.addCell(safe(hotel.getName()));
-            table.addCell(safe(hotel.getLocation()));
-            table.addCell(safe(hotel.getCheckIn()));
-            table.addCell(safe(hotel.getCheckOut()));
-            table.addCell(String.valueOf(hotel.getRating()));
-            table.addCell(formatPrice(hotel.getPriceFormatted(), hotel.getPricePerNight()));
-        }
-
-        document.add(table);
-    }
-
-    private void addExpensesSection(Document document, List<ExpenseSummaryItem> expenses) {
-        addSectionHeading(document, "Expenses");
-
-        if (expenses.isEmpty()) {
-            document.add(new Paragraph("No additional expenses entered."));
-            return;
-        }
-
-        Table table = new Table(UnitValue.createPercentArray(new float[] {2, 4, 1}))
-                .useAllAvailableWidth();
-        addHeader(table, "Category");
-        addHeader(table, "Description");
-        addHeader(table, "Amount");
-
-        for (ExpenseSummaryItem expense : expenses) {
-            table.addCell(safe(expense.getCategory()));
-            table.addCell(safe(expense.getDescription()));
-            table.addCell(formatCurrency(expense.getAmount()));
-        }
-
-        document.add(table);
-    }
-
-    private void addTotalSection(Document document, TripSummaryRequest request) {
-        addSectionHeading(document, "Estimated Total");
-        double total = 0;
-
-        for (FlightSummaryItem flight : listOrEmpty(request.getFlights())) {
-            total += flight.getPrice();
-        }
-
-        for (HotelSummaryItem hotel : listOrEmpty(request.getHotels())) {
-            total += hotel.getPricePerNight();
-        }
-
-        for (ExpenseSummaryItem expense : listOrEmpty(request.getExpenses())) {
-            total += expense.getAmount();
-        }
-
-        document.add(new Paragraph(formatCurrency(total)).setBold());
-    }
-
-    private void addHeader(Table table, String text) {
-        table.addHeaderCell(new Cell().add(new Paragraph(text).setBold()));
+    private Table twoColTable() {
+        Table table = new Table(UnitValue.createPercentArray(new float[]{40, 60}))
+                .setWidth(UnitValue.createPercentValue(100));
+        return table;
     }
 
     private void addRow(Table table, String label, String value) {
-        table.addCell(new Cell().add(new Paragraph(label).setBold()));
-        table.addCell(value);
+        table.addCell(new Cell().add(new Paragraph(label).setFontColor(TEXT_SECONDARY))
+                .setBackgroundColor(LIGHT_BG).setPadding(6));
+        table.addCell(new Cell().add(new Paragraph(value != null ? value : "-"))
+                .setPadding(6));
     }
 
-    private String formatPrice(String formattedPrice, double price) {
-        if (formattedPrice != null && !formattedPrice.isBlank()) {
-            return formattedPrice;
-        }
-
-        return formatCurrency(price);
-    }
-
-    private String formatCurrency(double amount) {
-        return NumberFormat.getCurrencyInstance(Locale.US).format(amount);
-    }
-
-    private String safe(String value) {
-        if (value == null || value.isBlank()) {
-            return "";
-        }
-
-        return value;
-    }
-
-    private <T> List<T> listOrEmpty(List<T> items) {
-        if (items == null) {
-            return Collections.emptyList();
-        }
-
-        return items;
+    private String formatDuration(int minutes) {
+        int h = minutes / 60;
+        int m = minutes % 60;
+        return h + "h " + m + "m";
     }
 }
